@@ -80,7 +80,45 @@ body {
     "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif,
     "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
   font-feature-settings: "tnum" 1, "cv05" 1;
+  /* Prevent horizontal scroll on mobile */
+  overflow-x: hidden;
 }
+
+/* ───────────────────────────────────────────────
+   MOBILE & TOUCH IMPROVEMENTS
+   ─────────────────────────────────────────────── */
+
+/* Smooth scroll on iOS */
+* {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Hide scrollbar on horizontal nav (but keep scrollable) */
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+/* Minimum touch target size (WCAG 2.5.5) */
+button, a, [role="button"] {
+  min-height: 36px;
+  touch-action: manipulation;
+}
+
+/* Safe area for phones with notches/home bars */
+main {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Prevent iOS text size adjustment */
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
 
 /* ───────────────────────────────────────────────
    DARK MODE VARIABLES

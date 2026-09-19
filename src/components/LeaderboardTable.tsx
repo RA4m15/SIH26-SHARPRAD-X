@@ -51,26 +51,26 @@ export const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
         </div>
 
         {/* Filter Tabs & Quick Search */}
-        <div className="flex items-center gap-3 flex-wrap">
-          <div className="relative">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 w-full sm:w-auto flex-wrap">
+          <div className="relative w-full sm:w-auto">
             <input
               type="text"
               placeholder="Search QP code or course..."
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
-              className="text-xs bg-[#eff4ff] text-[#0d1c2f] rounded pl-7 pr-3 py-1.5 border border-[#dde9ff] focus:outline-none focus:border-[#316bf3] w-48 sm:w-56"
+              className="text-xs bg-[#eff4ff] text-[#0d1c2f] rounded pl-7 pr-3 py-2 border border-[#dde9ff] focus:outline-none focus:border-[#316bf3] w-full sm:w-48 md:w-56"
             />
-            <span className="material-symbols-outlined text-[15px] absolute left-2 top-2 text-[#444651]">
+            <span className="material-symbols-outlined text-[15px] absolute left-2 top-2.5 text-[#444651]">
               search
             </span>
           </div>
 
-          <div className="flex items-center bg-[#eff4ff] rounded p-0.5 border border-[#dde9ff]">
+          <div className="flex items-center bg-[#eff4ff] rounded p-0.5 border border-[#dde9ff] flex-wrap gap-0.5">
             {(['Employment Rate', 'Retention (180D)', 'Wage Growth', 'Industry Alignment'] as SortTab[]).map(tab => (
               <button
                 key={tab}
                 onClick={() => setActiveSortTab(tab)}
-                className={`px-3 py-1 text-xs font-semibold rounded transition-all cursor-pointer ${
+                className={`px-2.5 py-1.5 text-[11px] font-semibold rounded transition-all cursor-pointer whitespace-nowrap ${
                   activeSortTab === tab
                     ? 'bg-white text-[#00236f] shadow-xs'
                     : 'text-[#444651] hover:text-[#0d1c2f]'
@@ -88,45 +88,45 @@ export const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
         <table className="w-full text-left text-xs">
           <thead>
             <tr className="bg-[#eff4ff] text-[#444651] text-[11px] font-semibold uppercase tracking-wider border-b border-[#dde9ff]">
-              <th className="py-2.5 px-4">QP / Course Title</th>
-              <th className="py-2.5 px-4">Placed Rate</th>
-              <th className="py-2.5 px-4 w-1/4">Performance Bar</th>
-              <th className="py-2.5 px-4">Avg Monthly Wage</th>
-              <th className="py-2.5 px-4">6M Retention</th>
-              <th className="py-2.5 px-4">Statutory Status</th>
-              <th className="py-2.5 px-4 text-right">Cohort Audit</th>
+              <th className="py-2.5 px-3">QP / Course Title</th>
+              <th className="py-2.5 px-3">Placed Rate</th>
+              <th className="py-2.5 px-3 hidden md:table-cell w-1/4">Performance Bar</th>
+              <th className="py-2.5 px-3 hidden sm:table-cell">Avg Wage</th>
+              <th className="py-2.5 px-3 hidden lg:table-cell">6M Retention</th>
+              <th className="py-2.5 px-3 hidden sm:table-cell">Statutory Status</th>
+              <th className="py-2.5 px-3 text-right">Audit</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-[#dde9ff]">
             {filteredCourses.slice(0, 5).map(course => (
               <tr key={course.id} className="hover:bg-[#eff4ff]/60 transition-colors">
                 {/* Title and QP code */}
-                <td className="py-3 px-4 font-medium text-[#0d1c2f]">
-                  <div className="flex items-center gap-3">
+                <td className="py-3 px-3 font-medium text-[#0d1c2f] min-w-[160px]">
+                  <div className="flex items-center gap-2">
                     <div className={`w-8 h-8 rounded ${course.iconBg} flex items-center justify-center ${course.iconColor} shrink-0 shadow-2xs`}>
-                      <span className="material-symbols-outlined text-[18px]">{course.icon}</span>
+                      <span className="material-symbols-outlined text-[17px]">{course.icon}</span>
                     </div>
-                    <div>
-                      <span className="text-sm font-semibold text-[#00236f] block">{course.title}</span>
-                      <span className="text-[11px] text-[#444651] font-mono">
-                        {course.qpCode} • NSQF Level {course.nsqfLevel}
+                    <div className="min-w-0">
+                      <span className="text-xs font-semibold text-[#00236f] block leading-snug">{course.title}</span>
+                      <span className="text-[10px] text-[#444651] font-mono">
+                        {course.qpCode} · L{course.nsqfLevel}
                       </span>
                     </div>
                   </div>
                 </td>
 
                 {/* Placed Rate */}
-                <td className="py-3 px-4">
-                  <span className="text-base font-bold text-[#003212] font-mono">
+                <td className="py-3 px-3 min-w-[70px]">
+                  <span className="text-sm font-bold text-[#003212] font-mono">
                     {course.placedRate}%
                   </span>
-                  <span className="block text-[11px] text-[#444651] font-mono">
-                    {course.placedCount.toLocaleString()} / {course.totalCandidates.toLocaleString()}
+                  <span className="block text-[10px] text-[#444651] font-mono">
+                    {course.placedCount.toLocaleString()}/{course.totalCandidates.toLocaleString()}
                   </span>
                 </td>
 
-                {/* Performance Bar */}
-                <td className="py-3 px-4">
+                {/* Performance Bar — hidden on mobile */}
+                <td className="py-3 px-3 hidden md:table-cell min-w-[100px]">
                   <div className="w-full bg-[#e6eeff] h-2 rounded overflow-hidden">
                     <div
                       className={`h-full rounded transition-all duration-500 ${
@@ -141,55 +141,55 @@ export const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
                   </div>
                 </td>
 
-                {/* Avg Monthly Wage */}
-                <td className="py-3 px-4 font-mono text-[#0d1c2f] font-semibold">
+                {/* Avg Monthly Wage — hidden on xs */}
+                <td className="py-3 px-3 font-mono text-[#0d1c2f] font-semibold hidden sm:table-cell min-w-[90px]">
                   ₹{course.avgWage.toLocaleString()}{' '}
-                  <span className="text-[11px] text-[#003212] font-normal font-sans">
+                  <span className="text-[10px] text-[#003212] font-normal font-sans">
                     (+{course.wageDeltaPercent}%)
                   </span>
                 </td>
 
-                {/* 6M Retention */}
-                <td className="py-3 px-4 font-mono font-semibold">
+                {/* 6M Retention — hidden on <lg */}
+                <td className="py-3 px-3 font-mono font-semibold hidden lg:table-cell min-w-[90px]">
                   <span className={course.retention6M < 65 ? 'text-[#ba1a1a]' : 'text-[#0d1c2f]'}>
-                    {course.retention6M}% Retained
+                    {course.retention6M}%
                   </span>
                 </td>
 
-                {/* Statutory Status */}
-                <td className="py-3 px-4">
+                {/* Statutory Status — hidden on xs */}
+                <td className="py-3 px-3 hidden sm:table-cell">
                   {course.statutoryStatus === 'Green Channel' && (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-[#e6eeff] text-[11px] text-[#003212] font-semibold border border-[#95f8a7]">
-                      <span className="material-symbols-outlined text-[13px]">verified</span> Green Channel
+                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-[#e6eeff] text-[10px] text-[#003212] font-semibold border border-[#95f8a7]">
+                      <span className="material-symbols-outlined text-[12px]">verified</span> Green
                     </span>
                   )}
                   {course.statutoryStatus === 'High Wage' && (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-[#e6eeff] text-[11px] text-[#0051d5] font-semibold border border-[#dbe1ff]">
-                      <span className="material-symbols-outlined text-[13px]">verified</span> High Wage
+                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-[#e6eeff] text-[10px] text-[#0051d5] font-semibold border border-[#dbe1ff]">
+                      <span className="material-symbols-outlined text-[12px]">verified</span> High Wage
                     </span>
                   )}
                   {course.statutoryStatus === 'Compliant' && (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-[#e6eeff] text-[11px] text-[#0d1c2f] font-semibold border border-[#dde9ff]">
+                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-[#e6eeff] text-[10px] text-[#0d1c2f] font-semibold border border-[#dde9ff]">
                       Compliant
                     </span>
                   )}
                   {course.statutoryStatus === 'Under Review' && (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-[#ffdad6] text-[11px] text-[#ba1a1a] font-bold border border-[#ffdad6]">
-                      <span className="material-symbols-outlined text-[13px]">report_problem</span> Under Review
+                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-[#ffdad6] text-[10px] text-[#ba1a1a] font-bold border border-[#ffdad6]">
+                      <span className="material-symbols-outlined text-[12px]">report_problem</span> Review
                     </span>
                   )}
                   {course.statutoryStatus === 'Standard Audit' && (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-[#e6eeff] text-[11px] text-[#0d1c2f] font-semibold border border-[#dde9ff]">
-                      Standard Audit
+                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-[#e6eeff] text-[10px] text-[#0d1c2f] font-semibold border border-[#dde9ff]">
+                      Audit
                     </span>
                   )}
                 </td>
 
-                {/* Cohort Audit Action */}
-                <td className="py-3 px-4 text-right">
+                {/* Inspect button */}
+                <td className="py-3 px-3 text-right">
                   <button
                     onClick={() => onInspectCourse(course)}
-                    className="px-3 py-1 rounded bg-[#eff4ff] hover:bg-[#dde9ff] text-[#00236f] text-xs font-semibold transition-colors border border-[#dde9ff] cursor-pointer"
+                    className="px-2.5 py-1.5 rounded bg-[#eff4ff] hover:bg-[#dde9ff] text-[#00236f] text-xs font-semibold transition-colors border border-[#dde9ff] cursor-pointer"
                     type="button"
                   >
                     Inspect
