@@ -1,0 +1,230 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #00236f;
+  --color-primary-container: #1e3a8a;
+  --color-on-primary: #ffffff;
+  --color-on-primary-container: #90a8ff;
+  --color-on-primary-fixed: #00164e;
+  --color-on-primary-fixed-variant: #264191;
+  --color-primary-fixed: #dce1ff;
+  --color-primary-fixed-dim: #b6c4ff;
+
+  --color-secondary: #0051d5;
+  --color-secondary-container: #316bf3;
+  --color-on-secondary: #ffffff;
+  --color-on-secondary-container: #fefcff;
+  --color-secondary-fixed: #dbe1ff;
+  --color-secondary-fixed-dim: #b4c5ff;
+  --color-on-secondary-fixed: #00174b;
+  --color-on-secondary-fixed-variant: #003ea8;
+
+  --color-tertiary: #003212;
+  --color-tertiary-container: #004b1f;
+  --color-on-tertiary: #ffffff;
+  --color-on-tertiary-container: #5ec074;
+  --color-tertiary-fixed: #95f8a7;
+  --color-tertiary-fixed-dim: #79db8d;
+  --color-on-tertiary-fixed: #00210a;
+  --color-on-tertiary-fixed-variant: #005323;
+
+  --color-error: #ba1a1a;
+  --color-error-container: #ffdad6;
+  --color-on-error: #ffffff;
+  --color-on-error-container: #93000a;
+
+  --color-surface: #f8f9ff;
+  --color-surface-dim: #ccdbf4;
+  --color-surface-bright: #f8f9ff;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-low: #eff4ff;
+  --color-surface-container: #e6eeff;
+  --color-surface-container-high: #dde9ff;
+  --color-surface-container-highest: #d5e3fd;
+  --color-surface-variant: #d5e3fd;
+  --color-surface-tint: #4059aa;
+
+  --color-background: #f8f9ff;
+  --color-on-surface: #0d1c2f;
+  --color-on-surface-variant: #444651;
+  --color-on-background: #0d1c2f;
+  --color-outline: #757682;
+  --color-outline-variant: #c5c5d3;
+  --color-inverse-surface: #233144;
+  --color-inverse-on-surface: #ebf1ff;
+  --color-inverse-primary: #b6c4ff;
+
+  --spacing-space-xxs: 0.125rem;
+  --spacing-space-xs: 0.25rem;
+  --spacing-space-sm: 0.5rem;
+  --spacing-space-md: 0.75rem;
+  --spacing-space-lg: 1rem;
+  --spacing-space-xl: 1.5rem;
+  --spacing-space-2xl: 2rem;
+  --spacing-space-3xl: 3rem;
+  --spacing-margin: 1rem;
+  --spacing-margin-md: 1.5rem;
+  --spacing-margin-lg: 2rem;
+  --spacing-gutter: 1rem;
+  --spacing-gutter-lg: 1.5rem;
+
+  --font-inter: 'Inter', sans-serif;
+}
+
+/* ───────────────────────────────────────────────
+   FONT FALLBACK SYSTEM
+   Ensures readable text when Brave blocks Google Fonts
+   ─────────────────────────────────────────────── */
+body {
+  font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif,
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  font-feature-settings: "tnum" 1, "cv05" 1;
+}
+
+/* ───────────────────────────────────────────────
+   DARK MODE VARIABLES
+   Toggled by adding .dark class to <html>
+   ─────────────────────────────────────────────── */
+html.dark {
+  --hb-bg: #0a1120;
+  --hb-surface: #111c30;
+  --hb-surface-card: #162038;
+  --hb-border: #1e3560;
+  --hb-text: #e2eaff;
+  --hb-text-muted: #8496b4;
+  --hb-header-bg: #030d1f;
+  --hb-nav-bg: #0d1c35;
+  --hb-filter-bg: #0f1e38;
+  color-scheme: dark;
+}
+
+html.dark body {
+  background-color: var(--hb-bg);
+  color: var(--hb-text);
+}
+
+html.dark .bg-white { background-color: var(--hb-surface-card) !important; }
+html.dark .bg-\[\#f8f9ff\] { background-color: var(--hb-bg) !important; }
+html.dark .bg-\[\#eff4ff\] { background-color: var(--hb-filter-bg) !important; }
+html.dark .bg-\[\#e6eeff\] { background-color: #0f2040 !important; }
+html.dark .bg-\[\#dde9ff\] { background-color: #162040 !important; }
+html.dark .border-\[\#dde9ff\] { border-color: var(--hb-border) !important; }
+html.dark .border-\[\#c5c5d3\] { border-color: var(--hb-border) !important; }
+html.dark .text-\[\#0d1c2f\] { color: var(--hb-text) !important; }
+html.dark .text-\[\#444651\] { color: var(--hb-text-muted) !important; }
+
+/* Material Symbols fallback — show box if font not loaded */
+.material-symbols-outlined {
+  font-family: 'Material Symbols Outlined', ui-monospace, monospace;
+  font-variation-settings:
+    'FILL' 0,
+    'wght' 400,
+    'GRAD' 0,
+    'opsz' 24;
+  vertical-align: middle;
+  line-height: 1;
+  display: inline-block;
+  user-select: none;
+}
+
+/* ───────────────────────────────────────────────
+   ANIMATIONS
+   ─────────────────────────────────────────────── */
+@keyframes hb-count-up {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.animate-hb-count-up {
+  animation: hb-count-up 0.45s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes hb-fade-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.animate-hb-fade-in {
+  animation: hb-fade-in 0.3s ease-out forwards;
+}
+
+/* ───────────────────────────────────────────────
+   PRINT STYLES
+   ─────────────────────────────────────────────── */
+@media print {
+  .no-print { display: none !important; }
+  header, nav, .filter-toolbar { display: none !important; }
+  main { padding-top: 0 !important; }
+  body { background: white !important; color: #000 !important; font-size: 10pt; }
+  .bg-white { box-shadow: none !important; border: 1px solid #ddd !important; }
+  a { text-decoration: none; color: inherit; }
+  @page { margin: 1.5cm; }
+}
+
+/* ───────────────────────────────────────────────
+   TYPOGRAPHY SHORTCUTS
+   ─────────────────────────────────────────────── */
+.font-mono-metric {
+  font-size: 28px;
+  line-height: 32px;
+  letter-spacing: -0.02em;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.font-headline-lg {
+  font-size: 24px;
+  line-height: 32px;
+  letter-spacing: -0.01em;
+  font-weight: 600;
+}
+
+.font-headline-md {
+  font-size: 20px;
+  line-height: 28px;
+  letter-spacing: -0.005em;
+  font-weight: 600;
+}
+
+.font-headline-sm {
+  font-size: 16px;
+  line-height: 24px;
+  letter-spacing: 0em;
+  font-weight: 600;
+}
+
+.font-body-lg {
+  font-size: 16px;
+  line-height: 24px;
+  letter-spacing: 0em;
+  font-weight: 400;
+}
+
+.font-body-md {
+  font-size: 14px;
+  line-height: 20px;
+  letter-spacing: 0em;
+  font-weight: 400;
+}
+
+.font-body-sm {
+  font-size: 13px;
+  line-height: 18px;
+  letter-spacing: 0em;
+  font-weight: 400;
+}
+
+.font-label-md {
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: 0.04em;
+  font-weight: 600;
+}
+
+.font-label-sm {
+  font-size: 11px;
+  line-height: 14px;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+}

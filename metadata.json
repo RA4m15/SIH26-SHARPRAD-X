@@ -1,0 +1,6 @@
+{
+  "name": "HireBound - Longitudinal Skilling & Outcome Engine",
+  "description": "Statutory outcome intelligence and longitudinal verification platform for the Ministry of Skill Development & Livelihood Analytics.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
