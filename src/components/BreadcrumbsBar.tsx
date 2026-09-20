@@ -11,7 +11,17 @@ export const BreadcrumbsBar: React.FC<BreadcrumbsBarProps> = ({
 }) => {
   const [syncing, setSyncing] = useState(false);
   const [lastRefreshed, setLastRefreshed] = useState('T-04:00 UTC');
-  const [currentTime, setCurrentTime] = useState('');
+  const [currentTime, setCurrentTime] = useState<string>(() => {
+    // Compute IST time synchronously so there's no empty-string flash on first render
+    const now = new Date();
+    const istOffset = 5.5 * 60 * 60 * 1000;
+    const utcMs = now.getTime() + now.getTimezoneOffset() * 60000;
+    const istDate = new Date(utcMs + istOffset);
+    const h = istDate.getHours().toString().padStart(2, '0');
+    const m = istDate.getMinutes().toString().padStart(2, '0');
+    const s = istDate.getSeconds().toString().padStart(2, '0');
+    return `${h}:${m}:${s} IST`;
+  });
   const [sessionStart] = useState(Date.now());
   const [sessionDuration, setSessionDuration] = useState('00:00');
 
