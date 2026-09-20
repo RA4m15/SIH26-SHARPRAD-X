@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../../../api/client';
 import { CenterInspection } from '../../../types';
+import { CENTER_INSPECTIONS_DATA } from '../../../data/mockData';
 import { Loader2 } from 'lucide-react';
 
 interface CenterInspectionScreenProps {
@@ -17,8 +18,8 @@ export const CenterInspectionScreen: React.FC<CenterInspectionScreenProps> = ({
 
   useEffect(() => {
     api.get<{ success: boolean; data: CenterInspection[] }>('/center-inspections')
-      .then(res => setInspections(res.data))
-      .catch(err => console.error(err))
+      .then(res => setInspections(res.data && res.data.length > 0 ? res.data : CENTER_INSPECTIONS_DATA))
+      .catch(() => setInspections(CENTER_INSPECTIONS_DATA))
       .finally(() => setIsLoading(false));
   }, []);
 

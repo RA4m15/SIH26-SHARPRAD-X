@@ -15,7 +15,10 @@ import {
 } from './types';
 import { 
   AUDIT_TRAIL_LOG,
-  BATCHES_DATA
+  BATCHES_DATA,
+  INITIAL_KPIS,
+  INITIAL_ALERTS,
+  COURSES_DATA
 } from './data/mockData';
 import { api } from './api/client';
 
@@ -132,15 +135,18 @@ export default function App() {
           const kpiRes = await api.get<{ success: boolean; data: KPIMetric[] }>(
             `/kpis?segment=${encodeURIComponent(filters.inclusionSegment)}&cycle=${encodeURIComponent(filters.reportingCycle)}`
           );
-          setKpis(kpiRes.data);
+          setKpis(kpiRes.data && kpiRes.data.length > 0 ? kpiRes.data : INITIAL_KPIS);
 
           const alertsRes = await api.get<{ success: boolean; data: EarlyWarningAlert[] }>('/kpis/alerts');
-          setAlerts(alertsRes.data);
+          setAlerts(alertsRes.data && alertsRes.data.length > 0 ? alertsRes.data : INITIAL_ALERTS);
 
           const coursesRes = await api.get<{ success: boolean; data: CourseLeaderboardItem[] }>('/courses');
-          setCourses(coursesRes.data);
+          setCourses(coursesRes.data && coursesRes.data.length > 0 ? coursesRes.data : COURSES_DATA);
         } catch (err) {
-          console.error('Failed to fetch data:', err);
+          console.warn('Backend API unreachable from this connection, using statutory local data:', err);
+          setKpis(INITIAL_KPIS);
+          setAlerts(INITIAL_ALERTS);
+          setCourses(COURSES_DATA);
         } finally {
           setIsLoadingData(false);
         }

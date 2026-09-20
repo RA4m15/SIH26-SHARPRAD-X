@@ -1,8 +1,19 @@
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+function getBaseUrl(): string {
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL;
+  }
+  if (typeof window !== 'undefined' && window.location) {
+    const hostname = window.location.hostname;
+    if (hostname && hostname !== 'localhost' && hostname !== '127.0.0.1') {
+      return `${window.location.protocol}//${hostname}:3001/api`;
+    }
+  }
+  return 'http://localhost:3001/api';
+}
 
 export class ApiError extends Error {
   constructor(public status: number, public data: any) {
-    super(data.error || 'An API error occurred');
+    super(data?.error || 'An API error occurred');
   }
 }
 
@@ -55,7 +66,7 @@ export const api = {
   },
 
   async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-    const url = `${BASE_URL}${endpoint}`;
+    const url = `${getBaseUrl()}${endpoint}`;
     
     const headers = new Headers(options.headers || {});
     headers.set('Content-Type', 'application/json');

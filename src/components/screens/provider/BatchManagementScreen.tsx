@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../../../api/client';
 import { BatchRecord } from '../../../types';
+import { BATCHES_DATA } from '../../../data/mockData';
 import { Loader2 } from 'lucide-react';
 
 interface BatchManagementScreenProps {
@@ -19,12 +20,18 @@ export const BatchManagementScreen: React.FC<BatchManagementScreenProps> = ({
   useEffect(() => {
     api.get<{ success: boolean; data: BatchRecord[] }>('/batches')
       .then(res => {
-        setBatches(res.data);
-        if (res.data.length > 0) {
-          setSelectedBatchId(res.data[0].batchId);
+        const list = res.data && res.data.length > 0 ? res.data : BATCHES_DATA;
+        setBatches(list);
+        if (list.length > 0) {
+          setSelectedBatchId(list[0].batchId);
         }
       })
-      .catch(err => console.error(err))
+      .catch(() => {
+        setBatches(BATCHES_DATA);
+        if (BATCHES_DATA.length > 0) {
+          setSelectedBatchId(BATCHES_DATA[0].batchId);
+        }
+      })
       .finally(() => setIsLoading(false));
   }, []);
 

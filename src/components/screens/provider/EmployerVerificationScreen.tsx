@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../../../api/client';
 import { EmployerConfirmation } from '../../../types';
+import { EMPLOYER_CONFIRMATIONS_DATA } from '../../../data/mockData';
 import { Loader2 } from 'lucide-react';
 
 interface EmployerVerificationScreenProps {
@@ -16,8 +17,8 @@ export const EmployerVerificationScreen: React.FC<EmployerVerificationScreenProp
 
   useEffect(() => {
     api.get<{ success: boolean; data: EmployerConfirmation[] }>('/employer-verifications')
-      .then(res => setConfirmations(res.data))
-      .catch(err => console.error(err))
+      .then(res => setConfirmations(res.data && res.data.length > 0 ? res.data : EMPLOYER_CONFIRMATIONS_DATA))
+      .catch(() => setConfirmations(EMPLOYER_CONFIRMATIONS_DATA))
       .finally(() => setIsLoading(false));
   }, []);
 

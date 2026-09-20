@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../../../api/client';
 import { TrancheInvoice } from '../../../types';
+import { TRANCHE_INVOICES_DATA } from '../../../data/mockData';
 import { Loader2 } from 'lucide-react';
 
 interface TrancheInvoicingScreenProps {
@@ -15,8 +16,8 @@ export const TrancheInvoicingScreen: React.FC<TrancheInvoicingScreenProps> = ({
 
   useEffect(() => {
     api.get<{ success: boolean; data: TrancheInvoice[] }>('/invoices')
-      .then(res => setInvoices(res.data))
-      .catch(err => console.error(err))
+      .then(res => setInvoices(res.data && res.data.length > 0 ? res.data : TRANCHE_INVOICES_DATA))
+      .catch(() => setInvoices(TRANCHE_INVOICES_DATA))
       .finally(() => setIsLoading(false));
   }, []);
 

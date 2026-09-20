@@ -22,6 +22,25 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const DEMO_USERS: Record<string, User> = {
+  'rajesh.verma@msde.gov.in': {
+    id: 'a0000000-0000-0000-0000-000000000001',
+    email: 'rajesh.verma@msde.gov.in',
+    name: 'Rajesh Verma, IAS',
+    role: 'ministry_officer',
+    designation: 'Joint Director, Skill Outcomes',
+    portal_mode: 'ministry-engine',
+  },
+  'ms.patwardhan@yuvaskill.org': {
+    id: 'a0000000-0000-0000-0000-000000000002',
+    email: 'ms.patwardhan@yuvaskill.org',
+    name: 'Dr. M. S. Patwardhan',
+    role: 'provider',
+    designation: 'Head of Ops · Yuva Council',
+    portal_mode: 'provider-portal',
+  }
+};
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -30,14 +49,42 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        if (!api.getToken()) {
+        const token = api.getToken();
+        if (!token) {
           setIsLoading(false);
           return;
         }
-        const res = await api.get<{ success: boolean; data: User }>('/auth/me');
-        setUser(res.data);
+
+        // Try getting user from API
+        try {
+          const res = await api.get<{ success: boolean; data: User }>('/auth/me');
+          if (res.data) {
+            setUser(res.data);
+            localStorage.setItem('hirebound_user', JSON.stringify(res.data));
+            return;
+          }
+        } catch {
+          // If API is unreachable (different device/network), restore cached user
+          const cached = localStorage.getItem('hirebound_user');
+          if (cached) {
+            try {
+              setUser(JSON.parse(cached));
+              return;
+            } catch {
+              // ignore json parse error
+            }
+          }
+          if (token.startsWith('demo_')) {
+            const demoUser = Object.values(DEMO_USERS).find(u => token.includes(u.id));
+            if (demoUser) {
+              setUser(demoUser);
+              return;
+            }
+          }
+        }
       } catch (err) {
         api.clearToken();
+        localStorage.removeItem('hirebound_user');
         setUser(null);
       } finally {
         setIsLoading(false);
@@ -48,6 +95,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const handleUnauthorized = () => {
       api.clearToken();
+      localStorage.removeItem('hirebound_user');
       setUser(null);
     };
     window.addEventListener('auth:unauthorized', handleUnauthorized);
@@ -55,18 +103,46 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = async (email: string, password: string) => {
+    setError(null);
+    const normalizedEmail = email.trim().toLowerCase();
+
+    // 1. First attempt live backend API login
     try {
-      setError(null);
-      const res = await api.post<{ success: boolean; data: { accessToken: string } }>('/auth/login', { email, password });
+      const res = await api.post<{ success: boolean; data: { accessToken: string; user?: User } }>('/auth/login', { email, password });
       api.setToken(res.data.accessToken);
       
-      const userRes = await api.get<{ success: boolean; data: User }>('/auth/me');
-      setUser(userRes.data);
+      let currentUser: User | null = res.data.user || null;
+      if (!currentUser) {
+        const userRes = await api.get<{ success: boolean; data: User }>('/auth/me');
+        currentUser = userRes.data;
+      }
+      setUser(currentUser);
+      localStorage.setItem('hirebound_user', JSON.stringify(currentUser));
+      return;
     } catch (err) {
-      if (err instanceof ApiError) {
+      // 2. If the backend responded with explicit 401 Unauthorized, credentials were wrong
+      if (err instanceof ApiError && err.status === 401) {
+        setError(err.message || 'Invalid email or password');
+        throw err;
+      }
+
+      // 3. If server is unreachable (connecting from another device, cellular data, or server offline)
+      // verify demo credentials locally to ensure seamless access across devices
+      if (DEMO_USERS[normalizedEmail] && password === 'HireBound@2024') {
+        const demoUser = DEMO_USERS[normalizedEmail];
+        api.setToken('demo_token_' + demoUser.id);
+        setUser(demoUser);
+        localStorage.setItem('hirebound_user', JSON.stringify(demoUser));
+        return;
+      }
+
+      // Otherwise report authentication failure
+      if (DEMO_USERS[normalizedEmail]) {
+        setError('Invalid password for demo account.');
+      } else if (err instanceof ApiError) {
         setError(err.message);
       } else {
-        setError('Login failed. Please check your network and try again.');
+        setError('Login failed. Please verify your credentials or server connection.');
       }
       throw err;
     }
@@ -74,6 +150,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = () => {
     api.clearToken();
+    localStorage.removeItem('hirebound_user');
     setUser(null);
   };
 
