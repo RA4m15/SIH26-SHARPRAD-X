@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import { EMPLOYER_CONFIRMATIONS_DATA } from '../../../data/mockData';
+import React, { useState, useEffect } from 'react';
+import { api } from '../../../api/client';
 import { EmployerConfirmation } from '../../../types';
+import { Loader2 } from 'lucide-react';
 
 interface EmployerVerificationScreenProps {
   onWageConfirmed: (record: EmployerConfirmation) => void;
@@ -9,16 +10,33 @@ interface EmployerVerificationScreenProps {
 export const EmployerVerificationScreen: React.FC<EmployerVerificationScreenProps> = ({
   onWageConfirmed
 }) => {
-  const [confirmations, setConfirmations] = useState<EmployerConfirmation[]>(EMPLOYER_CONFIRMATIONS_DATA);
+  const [confirmations, setConfirmations] = useState<EmployerConfirmation[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [selectedEmployerDoc, setSelectedEmployerDoc] = useState<EmployerConfirmation | null>(null);
 
-  const handleVerify = (id: string) => {
-    setConfirmations(prev =>
-      prev.map(c => c.id === id ? { ...c, digitalConfirmationStatus: 'Verified by HR', salarySlipVerified: true } : c)
-    );
-    const item = confirmations.find(c => c.id === id);
-    if (item) onWageConfirmed(item);
+  useEffect(() => {
+    api.get<{ success: boolean; data: EmployerConfirmation[] }>('/employer-verifications')
+      .then(res => setConfirmations(res.data))
+      .catch(err => console.error(err))
+      .finally(() => setIsLoading(false));
+  }, []);
+
+  const handleVerify = async (id: string) => {
+    try {
+      await api.patch(`/employer-verifications/${id}/confirm`);
+      setConfirmations(prev =>
+        prev.map(c => c.id === id ? { ...c, digitalConfirmationStatus: 'Verified by HR', salarySlipVerified: true } : c)
+      );
+      const item = confirmations.find(c => c.id === id);
+      if (item) onWageConfirmed(item);
+    } catch (err) {
+      console.error('Verification failed', err);
+    }
   };
+
+  if (isLoading) {
+    return <div className="p-8 flex justify-center"><Loader2 className="animate-spin text-hirebound-primary h-8 w-8" /></div>;
+  }
 
   return (
     <div className="space-y-6">

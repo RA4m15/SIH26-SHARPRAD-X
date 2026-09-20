@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import { BATCHES_DATA } from '../../../data/mockData';
+import React, { useState, useEffect } from 'react';
+import { api } from '../../../api/client';
 import { BatchRecord } from '../../../types';
+import { Loader2 } from 'lucide-react';
 
 interface BatchManagementScreenProps {
   onOpenDBTVerification: (batch: BatchRecord) => void;
@@ -11,10 +12,31 @@ export const BatchManagementScreen: React.FC<BatchManagementScreenProps> = ({
   onOpenDBTVerification,
   onOpenForm12C
 }) => {
-  const [batches] = useState<BatchRecord[]>(BATCHES_DATA);
-  const [selectedBatchId, setSelectedBatchId] = useState<string>('BAT-2024-0842');
+  const [batches, setBatches] = useState<BatchRecord[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [selectedBatchId, setSelectedBatchId] = useState<string>('');
+
+  useEffect(() => {
+    api.get<{ success: boolean; data: BatchRecord[] }>('/batches')
+      .then(res => {
+        setBatches(res.data);
+        if (res.data.length > 0) {
+          setSelectedBatchId(res.data[0].batchId);
+        }
+      })
+      .catch(err => console.error(err))
+      .finally(() => setIsLoading(false));
+  }, []);
+
+  if (isLoading) {
+    return <div className="p-8 flex justify-center"><Loader2 className="animate-spin text-hirebound-primary h-8 w-8" /></div>;
+  }
 
   const activeBatch = batches.find(b => b.batchId === selectedBatchId) || batches[0];
+
+  if (!activeBatch) {
+    return <div className="p-8 text-center text-slate-500">No batches found.</div>;
+  }
 
   return (
     <div className="space-y-6">

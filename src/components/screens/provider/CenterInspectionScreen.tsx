@@ -1,6 +1,7 @@
-import React from 'react';
-import { CENTER_INSPECTIONS_DATA } from '../../../data/mockData';
+import React, { useState, useEffect } from 'react';
+import { api } from '../../../api/client';
 import { CenterInspection } from '../../../types';
+import { Loader2 } from 'lucide-react';
 
 interface CenterInspectionScreenProps {
   onOpenShowCauseModal: (inspection: CenterInspection) => void;
@@ -11,6 +12,19 @@ export const CenterInspectionScreen: React.FC<CenterInspectionScreenProps> = ({
   onOpenShowCauseModal,
   onNavigateToEvidenceSubmission
 }) => {
+  const [inspections, setInspections] = useState<CenterInspection[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    api.get<{ success: boolean; data: CenterInspection[] }>('/center-inspections')
+      .then(res => setInspections(res.data))
+      .catch(err => console.error(err))
+      .finally(() => setIsLoading(false));
+  }, []);
+
+  if (isLoading) {
+    return <div className="p-8 flex justify-center"><Loader2 className="animate-spin text-hirebound-primary h-8 w-8" /></div>;
+  }
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -43,7 +57,7 @@ export const CenterInspectionScreen: React.FC<CenterInspectionScreenProps> = ({
 
       {/* Inspections Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {CENTER_INSPECTIONS_DATA.map(insp => (
+        {inspections.map(insp => (
           <div
             key={insp.id}
             className={`p-5 rounded bg-white border shadow-xs flex flex-col justify-between ${

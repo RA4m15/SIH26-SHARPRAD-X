@@ -14,12 +14,10 @@ import {
   TrancheInvoice
 } from './types';
 import { 
-  INITIAL_ALERTS, 
-  INITIAL_KPIS, 
-  COURSES_DATA, 
   AUDIT_TRAIL_LOG,
   BATCHES_DATA
 } from './data/mockData';
+import { api } from './api/client';
 
 // Header and Navigation
 import { Header } from './components/Header';
@@ -67,9 +65,26 @@ import { ESignSuccessModal } from './components/modals/provider/ESignSuccessModa
 import { ShowCauseModal } from './components/modals/provider/ShowCauseModal';
 import { DBTBonusModal } from './components/modals/provider/DBTBonusModal';
 
+import { LoginScreen } from './components/screens/LoginScreen';
+import { useAuth } from './contexts/AuthContext';
+import { Loader2 } from 'lucide-react';
+
 export default function App() {
+  const { user, isLoading } = useAuth();
+
   // Portal Mode
-  const [portalMode, setPortalMode] = useState<PortalMode>('ministry-engine');
+  const [portalMode, setPortalMode] = React.useState<PortalMode>('ministry-engine');
+
+  React.useEffect(() => {
+    if (user) {
+      setPortalMode(user.role === 'provider' ? 'provider-portal' : 'ministry-engine');
+      if (user.role === 'provider') {
+        setActiveTab('batch-management');
+      } else {
+        setActiveTab('overview-and-outcomes');
+      }
+    }
+  }, [user]);
 
   // Navigation
   const [activeTab, setActiveTab] = useState<NavigationTab>('overview-and-outcomes');
@@ -99,35 +114,40 @@ export default function App() {
     districtScope: 'Solapur Rural & Urban',
     sectorCategory: 'Green Energy & Solar',
     providerAgency: 'Yuva Skill Council',
-    inclusionSegment: 'All'
+    inclusionSegment: 'All',
   });
 
-  // Dynamic KPI numbers depending on inclusion segment
-  const getDisplayKPIs = (): KPIMetric[] => {
-    if (filters.inclusionSegment === 'Female') {
-      return [
-        { ...INITIAL_KPIS[0], value: '5,990', subtext: 'Annual Female Target: 7,200', progressPercent: 83.1, footerText: '83.1% of Target Met' },
-        { ...INITIAL_KPIS[1], value: '5,540', delta: '92.4%', subtext: 'NCVET Certified Cohort' },
-        { ...INITIAL_KPIS[2], value: '3,842', delta: '69.3%', subtext: 'Formal EPFO Recorded' },
-        { ...INITIAL_KPIS[3], value: '76%', delta: '+5.1%', progressPercent: 76, footerText: '2,920 Active at 6 Months' },
-        { ...INITIAL_KPIS[4], value: '₹16,800', delta: '+51.2%', subtext: 'Baseline: ₹11,100 entry', footerText: 'Net Delta: +₹5,700/mo' },
-        { ...INITIAL_KPIS[5], value: '14%', delta: '(838)', progressPercent: 14, footerText: 'Self-Help Group & Mudra' }
-      ];
-    } else if (filters.inclusionSegment === 'SC/ST/OBC') {
-      return [
-        { ...INITIAL_KPIS[0], value: '7,860', subtext: 'Annual Inclusion Target: 9,000', progressPercent: 87.3, footerText: '87.3% of Target Met' },
-        { ...INITIAL_KPIS[1], value: '7,120', delta: '90.5%', subtext: 'Affirmative Action Cohort' },
-        { ...INITIAL_KPIS[2], value: '5,510', delta: '70.1%', subtext: 'Active Direct Credit' },
-        { ...INITIAL_KPIS[3], value: '73%', delta: '+3.8%', progressPercent: 73, footerText: '4,022 Active at 6 Months' },
-        { ...INITIAL_KPIS[4], value: '₹17,100', delta: '+53.0%', subtext: 'Baseline: ₹11,150 entry', footerText: 'Net Delta: +₹5,950/mo' },
-        { ...INITIAL_KPIS[5], value: '11%', delta: '(865)', progressPercent: 11, footerText: 'Stand-Up India / PMMY' }
-      ];
-    }
-    return INITIAL_KPIS;
-  };
+  // Data State
+  const [kpis, setKpis] = useState<KPIMetric[]>([]);
+  const [alerts, setAlerts] = useState<EarlyWarningAlert[]>([]);
+  const [courses, setCourses] = useState<CourseLeaderboardItem[]>([]);
+  const [isLoadingData, setIsLoadingData] = useState(true);
 
-  // Directives and alerts
-  const [alerts, setAlerts] = useState<EarlyWarningAlert[]>(INITIAL_ALERTS);
+  React.useEffect(() => {
+    if (user) {
+      const fetchData = async () => {
+        setIsLoadingData(true);
+        try {
+          // Pass segment and cycle to KPIs API
+          const kpiRes = await api.get<{ success: boolean; data: KPIMetric[] }>(
+            `/kpis?segment=${encodeURIComponent(filters.inclusionSegment)}&cycle=${encodeURIComponent(filters.reportingCycle)}`
+          );
+          setKpis(kpiRes.data);
+
+          const alertsRes = await api.get<{ success: boolean; data: EarlyWarningAlert[] }>('/kpis/alerts');
+          setAlerts(alertsRes.data);
+
+          const coursesRes = await api.get<{ success: boolean; data: CourseLeaderboardItem[] }>('/courses');
+          setCourses(coursesRes.data);
+        } catch (err) {
+          console.error('Failed to fetch data:', err);
+        } finally {
+          setIsLoadingData(false);
+        }
+      };
+      fetchData();
+    }
+  }, [user, filters.inclusionSegment, filters.reportingCycle]);
 
   // General Modals state
   const [activeAlertForAction, setActiveAlertForAction] = useState<EarlyWarningAlert | null>(null);
@@ -184,10 +204,22 @@ export default function App() {
     showToast('Current Executive Outcome Intelligence view pinned & saved to dashboard.');
   };
 
-  const handleActionConfirm = () => {
+  const handleActionConfirm = async () => {
     if (activeAlertForAction) {
-      showToast(`Directive Executed: ${activeAlertForAction.actionLabel} registered successfully.`);
-      setActiveAlertForAction(null);
+      try {
+        await api.patch(`/kpis/alerts/${activeAlertForAction.id}/resolve`);
+        // Refresh alerts
+        const alertsRes = await api.get<{ success: boolean; data: EarlyWarningAlert[] }>('/kpis/alerts');
+        setAlerts(alertsRes.data);
+        
+        setAlerts(prev => prev.map(a => 
+          a.id === activeAlertForAction.id ? { ...a, status: 'resolved' } : a
+        ));
+        showToast(`Directive Executed: ${activeAlertForAction.actionLabel} registered successfully.`);
+        setActiveAlertForAction(null);
+      } catch (err) {
+        console.error('Failed to resolve alert', err);
+      }
     } else if (isSealLedgerModalOpen) {
       setIsLedgerSealed(true);
       setIsSealLedgerModalOpen(false);
@@ -246,6 +278,18 @@ export default function App() {
         return 'Longitudinal Verification';
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <Loader2 className="animate-spin h-10 w-10 text-blue-600" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <LoginScreen />;
+  }
 
   return (
     <div className="bg-[#f8f9ff] text-[#0d1c2f] antialiased min-h-screen flex flex-col font-sans relative">
@@ -347,7 +391,8 @@ export default function App() {
                     />
 
                     <KPIGrid
-                      kpis={getDisplayKPIs()}
+                      kpis={kpis}
+                      isLoading={isLoadingData}
                       onKPIClick={kpi => setSelectedKPIDrilldown(kpi)}
                     />
 
@@ -367,7 +412,7 @@ export default function App() {
                     </div>
 
                     <LeaderboardTable
-                      courses={COURSES_DATA}
+                      courses={courses}
                       onInspectCourse={course => setSelectedCourseForInspect(course)}
                       onViewAllJobPacks={() => setIsJobPacksOpen(true)}
                     />
@@ -545,7 +590,7 @@ export default function App() {
       {/* All Job Packs Catalog Modal */}
       {isJobPacksOpen && (
         <JobPacksModal
-          allCourses={COURSES_DATA}
+          allCourses={courses}
           onSelectCourse={course => setSelectedCourseForInspect(course)}
           onClose={() => setIsJobPacksOpen(false)}
         />

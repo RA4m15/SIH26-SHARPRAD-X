@@ -1,6 +1,7 @@
-import React from 'react';
-import { TRANCHE_INVOICES_DATA } from '../../../data/mockData';
+import React, { useState, useEffect } from 'react';
+import { api } from '../../../api/client';
 import { TrancheInvoice } from '../../../types';
+import { Loader2 } from 'lucide-react';
 
 interface TrancheInvoicingScreenProps {
   onOpenForm12CClaim: (invoice: TrancheInvoice) => void;
@@ -9,6 +10,19 @@ interface TrancheInvoicingScreenProps {
 export const TrancheInvoicingScreen: React.FC<TrancheInvoicingScreenProps> = ({
   onOpenForm12CClaim
 }) => {
+  const [invoices, setInvoices] = useState<TrancheInvoice[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    api.get<{ success: boolean; data: TrancheInvoice[] }>('/invoices')
+      .then(res => setInvoices(res.data))
+      .catch(err => console.error(err))
+      .finally(() => setIsLoading(false));
+  }, []);
+
+  if (isLoading) {
+    return <div className="p-8 flex justify-center"><Loader2 className="animate-spin text-hirebound-primary h-8 w-8" /></div>;
+  }
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -62,7 +76,7 @@ export const TrancheInvoicingScreen: React.FC<TrancheInvoicingScreenProps> = ({
               </tr>
             </thead>
             <tbody className="divide-y divide-[#dde9ff]">
-              {TRANCHE_INVOICES_DATA.map(inv => (
+              {invoices.map(inv => (
                 <tr key={inv.id} className="hover:bg-[#eff4ff]/60 transition-colors">
                   <td className="py-3 px-4">
                     <span className="font-mono font-bold text-[#00236f] block">{inv.invoiceNumber}</span>

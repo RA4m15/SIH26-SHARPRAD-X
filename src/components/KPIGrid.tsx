@@ -3,6 +3,7 @@ import { KPIMetric } from '../types';
 
 interface KPIGridProps {
   kpis: KPIMetric[];
+  isLoading?: boolean;
   onKPIClick?: (kpi: KPIMetric) => void;
 }
 
@@ -154,18 +155,26 @@ const KPICard: React.FC<KPICardProps> = ({ kpi, onKPIClick, delay }) => {
   );
 };
 
-export const KPIGrid: React.FC<KPIGridProps> = ({ kpis, onKPIClick }) => {
+export const KPIGrid: React.FC<KPIGridProps> = ({ kpis, isLoading, onKPIClick }) => {
   return (
     <section className="w-full">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-4">
-        {kpis.map((kpi, idx) => (
-          <KPICard
-            key={kpi.id}
-            kpi={kpi}
-            onKPIClick={onKPIClick}
-            delay={idx * 80}
-          />
-        ))}
+        {isLoading 
+          ? Array(6).fill(0).map((_, i) => (
+              <div key={i} className="animate-pulse bg-white rounded-xl shadow-sm border border-[#dde9ff] p-4 h-32 flex flex-col justify-between">
+                <div className="h-4 bg-[#eff4ff] rounded w-1/2"></div>
+                <div className="h-8 bg-[#eff4ff] rounded w-3/4"></div>
+                <div className="h-2 bg-[#eff4ff] rounded w-full mt-2"></div>
+              </div>
+            ))
+          : kpis.map((kpi, idx) => (
+              <KPICard
+                key={kpi.id || idx}
+                kpi={kpi}
+                onKPIClick={onKPIClick}
+                delay={idx * 80}
+              />
+            ))}
       </div>
     </section>
   );
