@@ -69,27 +69,27 @@ interface KPICardProps {
 }
 
 const KPICard: React.FC<KPICardProps> = ({ kpi, onKPIClick, delay }) => {
-  const [visible, setVisible] = useState(false);
+  // `mounted` flips to true after first paint via rAF — triggers count-up & progress bar
+  // Cards are ALWAYS visible from the start (no opacity-0 gate) so there's no flash
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    const id = setTimeout(() => setVisible(true), delay);
-    return () => clearTimeout(id);
-  }, [delay]);
+    const raf = requestAnimationFrame(() => setMounted(true));
+    return () => cancelAnimationFrame(raf);
+  }, []);
 
-  const numericTarget = visible ? parseNumericValue(kpi.value) : null;
+  const numericTarget = mounted ? parseNumericValue(kpi.value) : null;
   const countedValue = useCountUp(numericTarget, 800);
 
-  const displayValue = (visible && countedValue !== null)
+  const displayValue = (mounted && countedValue !== null)
     ? formatLike(kpi.value, countedValue)
     : kpi.value;
 
   return (
     <div
       onClick={() => onKPIClick && onKPIClick(kpi)}
-      className={`bg-white p-3.5 rounded shadow-xs border border-[#dde9ff] flex flex-col justify-between hover:border-[#316bf3] hover:shadow-sm transition-all cursor-pointer group ${
-        visible ? 'animate-hb-count-up' : 'opacity-0'
-      }`}
-      style={{ animationDelay: `${delay}ms` }}
+      className="bg-white p-3.5 rounded shadow-xs border border-[#dde9ff] flex flex-col justify-between hover:border-[#316bf3] hover:shadow-sm transition-all cursor-pointer group animate-hb-count-up"
+      style={{ animationDelay: `${delay}ms`, animationFillMode: 'both' }}
       title={`Click to view longitudinal drilldown for ${kpi.label}`}
     >
       <div>
@@ -126,7 +126,7 @@ const KPICard: React.FC<KPICardProps> = ({ kpi, onKPIClick, delay }) => {
             <div className="w-full bg-[#e6eeff] h-1.5 rounded overflow-hidden">
               <div
                 className={`${kpi.progressColor || 'bg-[#00236f]'} h-full rounded transition-all duration-700`}
-                style={{ width: visible ? `${kpi.progressPercent}%` : '0%' }}
+                style={{ width: mounted ? `${kpi.progressPercent}%` : '0%' }}
               />
             </div>
             {kpi.footerText && (
