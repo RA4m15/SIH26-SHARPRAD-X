@@ -6,6 +6,41 @@ export class ApiError extends Error {
   }
 }
 
+const NUMERIC_KEYS = new Set([
+  'progressPercent',
+  'placedRate',
+  'wageDeltaPercent',
+  'retention6M',
+  'epfoMatchRate',
+  'biometricAttendanceRate',
+  'assessmentCleared',
+]);
+
+export function snakeToCamel(obj: any): any {
+  if (Array.isArray(obj)) {
+    return obj.map(snakeToCamel);
+  }
+  if (obj !== null && typeof obj === 'object' && !(obj instanceof Date) && !(obj instanceof RegExp)) {
+    return Object.keys(obj).reduce((acc: any, key: string) => {
+      let camelKey = key.replace(/_([a-z0-9])/g, (_, char) => char.toUpperCase());
+      if (camelKey === 'retention6m') camelKey = 'retention6M';
+      
+      let val = snakeToCamel(obj[key]);
+      
+      if (NUMERIC_KEYS.has(camelKey) && typeof val === 'string' && !isNaN(Number(val))) {
+        val = Number(val);
+      }
+      
+      acc[camelKey] = val;
+      if (camelKey !== key) {
+        acc[key] = val;
+      }
+      return acc;
+    }, {});
+  }
+  return obj;
+}
+
 export const api = {
   getToken() {
     return localStorage.getItem('hirebound_token');
@@ -38,6 +73,9 @@ export const api = {
     let data;
     try {
       data = await response.json();
+      if (data) {
+        data = snakeToCamel(data);
+      }
     } catch (e) {
       data = null;
     }

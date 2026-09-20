@@ -19,21 +19,31 @@ export const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
 
   // Sort logic based on tab
   const sortedCourses = [...courses].sort((a, b) => {
+    const placedA = Number(a.placedRate || 0);
+    const placedB = Number(b.placedRate || 0);
+    const retA = Number(a.retention6M || 0);
+    const retB = Number(b.retention6M || 0);
+    const wageDeltaA = Number(a.wageDeltaPercent || 0);
+    const wageDeltaB = Number(b.wageDeltaPercent || 0);
+    const avgWageA = Number(a.avgWage || 0);
+    const avgWageB = Number(b.avgWage || 0);
+
     if (activeSortTab === 'Employment Rate') {
-      return b.placedRate - a.placedRate;
+      return placedB - placedA;
     } else if (activeSortTab === 'Retention (180D)') {
-      return b.retention6M - a.retention6M;
+      return retB - retA;
     } else if (activeSortTab === 'Wage Growth') {
-      return b.wageDeltaPercent - a.wageDeltaPercent;
+      return wageDeltaB - wageDeltaA;
     } else {
-      return b.avgWage - a.avgWage;
+      return avgWageB - avgWageA;
     }
   });
 
+  const q = (searchQuery || '').toLowerCase();
   const filteredCourses = sortedCourses.filter(c => 
-    c.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    c.qpCode.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    c.sector.toLowerCase().includes(searchQuery.toLowerCase())
+    (c.title || '').toLowerCase().includes(q) ||
+    (c.qpCode || '').toLowerCase().includes(q) ||
+    (c.sector || '').toLowerCase().includes(q)
   );
 
   return (
@@ -118,10 +128,10 @@ export const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
                 {/* Placed Rate */}
                 <td className="py-3 px-3 min-w-[70px]">
                   <span className="text-sm font-bold text-[#003212] font-mono">
-                    {course.placedRate}%
+                    {course.placedRate ?? 0}%
                   </span>
                   <span className="block text-[10px] text-[#444651] font-mono">
-                    {course.placedCount.toLocaleString()}/{course.totalCandidates.toLocaleString()}
+                    {(course.placedCount ?? 0).toLocaleString()}/{(course.totalCandidates ?? 0).toLocaleString()}
                   </span>
                 </td>
 
@@ -130,29 +140,29 @@ export const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
                   <div className="w-full bg-[#e6eeff] h-2 rounded overflow-hidden">
                     <div
                       className={`h-full rounded transition-all duration-500 ${
-                        course.placedRate >= 85
+                        (course.placedRate ?? 0) >= 85
                           ? 'bg-[#003212]'
-                          : course.placedRate >= 75
+                          : (course.placedRate ?? 0) >= 75
                           ? 'bg-[#0051d5]'
                           : 'bg-[#4059aa]'
                       }`}
-                      style={{ width: `${course.placedRate}%` }}
+                      style={{ width: `${course.placedRate ?? 0}%` }}
                     ></div>
                   </div>
                 </td>
 
                 {/* Avg Monthly Wage — hidden on xs */}
                 <td className="py-3 px-3 font-mono text-[#0d1c2f] font-semibold hidden sm:table-cell min-w-[90px]">
-                  ₹{course.avgWage.toLocaleString()}{' '}
+                  ₹{(course.avgWage ?? 0).toLocaleString()}{' '}
                   <span className="text-[10px] text-[#003212] font-normal font-sans">
-                    (+{course.wageDeltaPercent}%)
+                    (+{course.wageDeltaPercent ?? 0}%)
                   </span>
                 </td>
 
                 {/* 6M Retention — hidden on <lg */}
                 <td className="py-3 px-3 font-mono font-semibold hidden lg:table-cell min-w-[90px]">
-                  <span className={course.retention6M < 65 ? 'text-[#ba1a1a]' : 'text-[#0d1c2f]'}>
-                    {course.retention6M}%
+                  <span className={(course.retention6M ?? 0) < 65 ? 'text-[#ba1a1a]' : 'text-[#0d1c2f]'}>
+                    {course.retention6M ?? 0}%
                   </span>
                 </td>
 

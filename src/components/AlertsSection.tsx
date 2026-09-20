@@ -63,14 +63,18 @@ export const AlertsSection: React.FC<AlertsSectionProps> = ({ alerts, onActionCl
                   <span className="text-[11px] text-[#444651]">• {alert.scope}</span>
                 </div>
                 <p className="text-xs font-medium mt-1 text-[#0d1c2f] leading-relaxed">
-                  {alert.description.split(alert.highlightText).map((part, i, arr) => (
-                    <React.Fragment key={i}>
-                      {part}
-                      {i < arr.length - 1 && (
-                        <span className={`font-bold ${badgeColor}`}>{alert.highlightText}</span>
-                      )}
-                    </React.Fragment>
-                  ))}
+                  {alert.highlightText && alert.description.includes(alert.highlightText) ? (
+                    alert.description.split(alert.highlightText).map((part, i, arr) => (
+                      <React.Fragment key={i}>
+                        {part}
+                        {i < arr.length - 1 && (
+                          <span className={`font-bold ${badgeColor}`}>{alert.highlightText}</span>
+                        )}
+                      </React.Fragment>
+                    ))
+                  ) : (
+                    alert.description
+                  )}
                 </p>
                 <div className="flex items-center gap-3 mt-2">
                   <button

@@ -122,7 +122,7 @@ const KPICard: React.FC<KPICardProps> = ({ kpi, onKPIClick, delay }) => {
       </div>
 
       <div className="mt-3">
-        {kpi.progressPercent !== undefined ? (
+        {kpi.progressPercent != null ? (
           <>
             <div className="w-full bg-[#e6eeff] h-1.5 rounded overflow-hidden">
               <div
