@@ -17,7 +17,15 @@ app.use(helmet());
 // ── CORS ──────────────────────────────────────────────────────────────────
 app.use(cors({
   origin: (origin, cb) => {
-    if (!origin || env.CORS_ORIGINS.includes(origin)) {
+    if (
+      !origin || 
+      env.NODE_ENV === 'development' ||
+      env.CORS_ORIGINS.includes(origin) ||
+      origin.includes('localhost') ||
+      origin.includes('127.0.0.1') ||
+      origin.includes('vercel.app') ||
+      /^http:\/\/(192\.168\.|172\.|10\.)/.test(origin)
+    ) {
       cb(null, true);
     } else {
       cb(new Error(`CORS blocked: ${origin}`));
