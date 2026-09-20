@@ -4,7 +4,7 @@ import { ShieldCheck, Loader2 } from 'lucide-react';
 
 export function LoginScreen() {
   const { login, error } = useAuth();
-  const [email, setEmail] = useState('ministry@hirebound.gov.in');
+  const [email, setEmail] = useState('rajesh.verma@msde.gov.in');
   const [password, setPassword] = useState('HireBound@2024');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -131,8 +131,8 @@ export function LoginScreen() {
 
             <div className="mt-6 grid grid-cols-1 gap-3">
               <div className="text-xs text-center text-slate-600 bg-slate-50 p-3 rounded-lg border border-slate-100">
-                <p>Ministry: <strong>ministry@hirebound.gov.in</strong></p>
-                <p className="mt-1">Provider: <strong>provider@hirebound.gov.in</strong></p>
+                <p>Ministry: <strong>rajesh.verma@msde.gov.in</strong></p>
+                <p className="mt-1">Provider: <strong>ms.patwardhan@yuvaskill.org</strong></p>
                 <p className="mt-2 text-slate-400">Password: HireBound@2024</p>
               </div>
             </div>
